@@ -1,15 +1,8 @@
-import os
-
+# Description: This file contains utility functions for the registration pipeline
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.colors import SymLogNorm
-from skimage import io
-from tqdm import tqdm
 from skimage.transform import rotate
 from sklearn.preprocessing import normalize
-
-
-# TODO
 
 
 def intersection_over_union(im1, im2):
@@ -36,9 +29,8 @@ def find_best_angle(im):
 
 def mean_stack_angle(im):
     angles = []
-    print('Finding best angle for each slice in stack')
     midpoint = im.shape[0] // 2
-    for i in tqdm(range(midpoint-100, midpoint+100, 10)):
+    for i in range(midpoint-100, midpoint+100, 10):
         angles.append(find_best_angle(im[i, :, :]))
     return np.mean(angles)
 
@@ -89,44 +81,32 @@ def gradient_magnitude(centroids):
     return np.sqrt(np.add(np.square(dx), np.square(dy)))
 
 
-if __name__ == '__main__':
-    print('Loading image')
-    im = io.imread('/Volumes/Zunisha/Registration/TRAP_DL_12_561.tiff')
-
-    print('Shifting image to center')
+def align_single(im):
+    # aligns a single image
     shifted_im = np.zeros_like(im, dtype=np.float16)
     centroids = []
-    for i in tqdm(range(im.shape[0])):
+    for i in range(im.shape[0]):
         slice = im[i, :, :]
         slice = np.array((slice - np.mean(slice)) / np.std(slice), dtype=np.float16)
-        #slice = slice - slice.min()
-        slice[np.where(slice<=0)] = 0
+        slice[np.where(slice <= 0)] = 0
         shifted_im[i, :, :] = slice
         centroids.append(find_image_centroid(slice))
 
     centroids = smooth_centroids(centroids)
     good_interval = np.where(gradient_magnitude(centroids) < 5)[0]
     low_cut, up_cut = good_interval.min(), good_interval.max()
-    for i in range(low_cut, up_cut):
-        shifted_im[i,:,:] = shift_to_centroid(shifted_im[i,:,:], centroids[i])
+    #for i in range(low_cut, up_cut):
+    #    shifted_im[i, :, :] = shift_to_centroid(shifted_im[i, :, :], centroids[i])
 
     rot_angle = mean_stack_angle(shifted_im)
 
     # Take a slice from the original and processed images and plot them
     processed_im = np.zeros_like(im, dtype=np.uint16)
-    for idx in tqdm(range(low_cut, up_cut)):
-        #slice = im[idx, :, :]
-        # 0  # norm='symlog'
-        # plt.show()
-
+    for idx in range(low_cut, up_cut):
         shifted_slice = shifted_im[idx, :, :]
         rot_slice = rotate(shifted_slice, angle=rot_angle,
                            mode='constant', cval=np.min(shifted_slice))
-        processed_im[idx, :, :] = np.array((2**16)*SymLogNorm(0.01, clip=True).__call__(rot_slice),
+        processed_im[idx, :, :] = np.array((2 ** 16) * SymLogNorm(0.01, clip=True).__call__(rot_slice),
                                            dtype=np.uint16)
-        # rot_slice = rotate(shifted_slice, angle=rot_angle, mode='constant', cval=np.min(shifted_slice))
-        # plt.imshow(rot_slice, norm='symlog', cmap='gray')  # norm='symlog'
-        # plt.show()
 
-    print('Saving image')
-    io.imsave('./Images/TRAP_DL_12_561_rough.tiff', processed_im)
+    return processed_im
