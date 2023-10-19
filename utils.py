@@ -3,6 +3,8 @@ import numpy as np
 from matplotlib.colors import SymLogNorm
 from skimage.transform import rotate
 from sklearn.preprocessing import normalize
+from skimage import exposure
+
 
 
 def intersection_over_union(im1, im2):
@@ -86,7 +88,7 @@ def align_single(im):
     shifted_im = np.zeros_like(im, dtype=np.float16)
     centroids = []
     for i in range(im.shape[0]):
-        slice = im[i, :, :]
+        slice = exposure.equalize_adapthist(im[i, :, :], clip_limit=0.03) #im[i, :, :]
         slice = np.array((slice - np.mean(slice)) / np.std(slice), dtype=np.float16)
         slice[np.where(slice <= 0)] = 0
         shifted_im[i, :, :] = slice
