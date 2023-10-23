@@ -87,18 +87,24 @@ def align_single(im):
     # aligns a single image
     shifted_im = np.zeros_like(im, dtype=np.float16)
     centroids = []
+    magnitudes = []
     for i in range(im.shape[0]):
-        slice = exposure.equalize_adapthist(im[i, :, :], clip_limit=0.03) #im[i, :, :]
-        slice = np.array((slice - np.mean(slice)) / np.std(slice), dtype=np.float16)
-        slice[np.where(slice <= 0)] = 0
+        #slice = im[i, :, :]
+        #slice = np.array((slice - np.mean(slice)) / np.std(slice), dtype=np.float16) #np.float16
+        #slice[np.where(slice <= 0)] = 0
+        slice = exposure.equalize_adapthist(im[i, :, :], clip_limit=0.15) #im[i, :, :]
+
         shifted_im[i, :, :] = slice
+        magnitudes.append(np.mean(slice))
         centroids.append(find_image_centroid(slice))
 
     centroids = smooth_centroids(centroids)
-    good_interval = np.where(gradient_magnitude(centroids) < 5)[0]
-    low_cut, up_cut = good_interval.min(), good_interval.max()
+    good_interval = np.where(np.abs(np.gradient(magnitudes))>0.07)[0]
+    #good_interval = np.where(gradient_magnitude(centroids) < 5)[0]
+    low_cut, up_cut = good_interval.min()+1, good_interval.max()-1
     #for i in range(low_cut, up_cut):
     #    shifted_im[i, :, :] = shift_to_centroid(shifted_im[i, :, :], centroids[i])
+
 
     rot_angle = mean_stack_angle(shifted_im)
 
@@ -108,7 +114,7 @@ def align_single(im):
         shifted_slice = shifted_im[idx, :, :]
         rot_slice = rotate(shifted_slice, angle=rot_angle,
                            mode='constant', cval=np.min(shifted_slice))
-        processed_im[idx, :, :] = np.array((2 ** 16) * SymLogNorm(0.01, clip=True).__call__(rot_slice),
+        processed_im[idx, :, :] = np.array((2 ** 16) * rot_slice,
                                            dtype=np.uint16)
 
     return processed_im
