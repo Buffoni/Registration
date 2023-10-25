@@ -88,13 +88,15 @@ def align_single(im):
     shifted_im = np.zeros_like(im, dtype=np.float16)
     centroids = []
     magnitudes = []
+    shifted_im = exposure.equalize_adapthist(im, clip_limit=0.15)  # im[i, :, :]
     for i in range(im.shape[0]):
         #slice = im[i, :, :]
         #slice = np.array((slice - np.mean(slice)) / np.std(slice), dtype=np.float16) #np.float16
         #slice[np.where(slice <= 0)] = 0
-        slice = exposure.equalize_adapthist(im[i, :, :], clip_limit=0.15) #im[i, :, :]
+        #slice = exposure.equalize_adapthist(im[i, :, :], clip_limit=0.15) #im[i, :, :]
 
-        shifted_im[i, :, :] = slice
+        #shifted_im[i, :, :] = slice
+        slice = shifted_im[i, :, :]
         magnitudes.append(np.mean(slice))
         centroids.append(find_image_centroid(slice))
 

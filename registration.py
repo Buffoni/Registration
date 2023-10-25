@@ -2,6 +2,8 @@ import ants
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+
+#base = '/home/fis00lorebuff/Registration/Images/'
 base = '/Volumes/Zunisha/Registration/'
 
 fixed= ants.image_read(base + 'aligned/TRAP_DL_12_561.tiff')
@@ -22,5 +24,5 @@ warpedimage = ants.apply_transforms( fixed=fixed, moving=moving, transformlist=m
 #mytx = ants.registration(fixed=fixed, moving=moving, type_of_transform='SyNRA', reg_iterations=(40, 20, 10, 0))
 #warpedimage = ants.apply_transforms( fixed=fixed, moving=moving, transformlist=mytx['fwdtransforms'])
 
-warpedimage.to_file(base + 'registered/TRAP_DL_3_561.tiff')
+warpedimage.to_file(base + 'registered_new/TRAP_DL_3_561.tiff')
 
