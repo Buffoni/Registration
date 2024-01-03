@@ -6,7 +6,7 @@ from skimage import io
 base = '/Volumes/Zunisha/Registration/'
 filenames = [f for f in os.listdir(base) if f.endswith('.tiff') and not(f.startswith('.'))]
 for f in filenames:
-    print('Loading image' + f)
+    print('Loading image: ' + f)
     im = io.imread(base + f)
     print('Align and rotate image')
     shifted_im = align_single(im)
