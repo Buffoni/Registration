@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-#base = '/home/fis00lorebuff/Registration/Images/'
-base = '/Volumes/Zunisha/Registration/'
+base = '/home/fis00lorebuff/Registration/Images/'
+#base = '/Volumes/Zunisha/Registration/'
 
 fixed= ants.image_read(base + 'aligned/TRAP_DL_12_561.tiff')
 moving= ants.image_read(base + 'aligned/TRAP_DL_3_561.tiff')
