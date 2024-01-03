@@ -88,7 +88,7 @@ def align_single(im):
     shifted_im = np.zeros_like(im, dtype=np.float16)
     centroids = []
     magnitudes = []
-    shifted_im = exposure.equalize_adapthist(im, clip_limit=0.15)  # im[i, :, :]
+    shifted_im = im #exposure.equalize_adapthist(im, clip_limit=0.15)  # im[i, :, :]
     for i in range(im.shape[0]):
         #slice = im[i, :, :]
         #slice = np.array((slice - np.mean(slice)) / np.std(slice), dtype=np.float16) #np.float16
@@ -110,7 +110,6 @@ def align_single(im):
 
     rot_angle = mean_stack_angle(shifted_im)
 
-    # Take a slice from the original and processed images and plot them
     processed_im = np.zeros_like(im, dtype=np.uint16)
     for idx in range(low_cut, up_cut):
         shifted_slice = shifted_im[idx, :, :]
@@ -119,4 +118,5 @@ def align_single(im):
         processed_im[idx, :, :] = np.array((2 ** 16) * rot_slice,
                                            dtype=np.uint16)
 
-    return processed_im
+    processed_im1 = exposure.equalize_adapthist(processed_im, clip_limit=0.15)
+    return processed_im1
