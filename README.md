@@ -1,4 +1,4 @@
-# Image Registration Pipeline
+# 3D Image Registration Pipeline
 
 This project performs coarse and fine registration of 3D microscopy images using image processing and ANTsPy.
 
