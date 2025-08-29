@@ -1,10 +1,9 @@
 # Description: This file contains utility functions for the registration pipeline
 import numpy as np
-from matplotlib.colors import SymLogNorm
 from skimage.transform import rotate
 from sklearn.preprocessing import normalize
-from skimage import exposure
-
+from skimage import io
+import matplotlib.pyplot as plt
 
 
 def intersection_over_union(im1, im2):
@@ -101,7 +100,7 @@ def align_single(im):
         centroids.append(find_image_centroid(slice))
 
     centroids = smooth_centroids(centroids)
-    good_interval = np.where(np.abs(np.gradient(magnitudes))>0.07)[0]
+    good_interval = np.where(np.abs(np.gradient(magnitudes))<100)[0]
     #good_interval = np.where(gradient_magnitude(centroids) < 5)[0]
     low_cut, up_cut = good_interval.min()+1, good_interval.max()-1
     #for i in range(low_cut, up_cut):
@@ -110,13 +109,41 @@ def align_single(im):
 
     rot_angle = mean_stack_angle(shifted_im)
 
-    processed_im = np.zeros_like(im, dtype=np.uint16)
+    processed_im = np.zeros_like(im, dtype=np.uint8)
     for idx in range(low_cut, up_cut):
         shifted_slice = shifted_im[idx, :, :]
         rot_slice = rotate(shifted_slice, angle=rot_angle,
                            mode='constant', cval=np.min(shifted_slice))
-        processed_im[idx, :, :] = np.array((2 ** 16) * rot_slice,
-                                           dtype=np.uint16)
+        processed_im[idx, :, :] = np.array(((2 ** 8) - 1) * rot_slice,
+                                           dtype=np.uint8)
 
-    processed_im1 = exposure.equalize_adapthist(processed_im, clip_limit=0.15)
-    return processed_im1
+    #processed_im1 = exposure.equalize_adapthist(processed_im, clip_limit=0.15)
+    return processed_im
+
+
+if __name__=="__main__":
+    base = '/data/Registration/Images/'
+    f = 'TRAP_DL_12_561_contrast.tiff'
+    print('Loading image: ' + f)
+    im = io.imread(base + f)
+    print('Align and rotate image')
+    shifted_im = np.zeros_like(im, dtype=np.float16)
+    centroids = []
+    magnitudes = []
+    shifted_im = im #exposure.equalize_adapthist(im, clip_limit=0.15)  # im[i, :, :]
+    for i in range(im.shape[0]):
+        if(i > -1 and i <10000):
+            #slice = im[i, :, :]
+            #slice = np.array((slice - np.mean(slice)) / np.std(slice), dtype=np.float16) #np.float16
+            #slice[np.where(slice <= 0)] = 0
+            #slice = exposure.equalize_adapthist(im[i, :, :], clip_limit=0.15) #im[i, :, :]
+
+            #shifted_im[i, :, :] = slice
+            slice = shifted_im[i, :, :]
+            magnitudes.append(np.mean(slice))
+            centroids.append(find_image_centroid(slice))
+
+    centroids = smooth_centroids(centroids)
+    plt.plot(gradient_magnitude(centroids) )
+    plt.yscale('log')
+    plt.savefig('mags.png')

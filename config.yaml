@@ -1,0 +1,12 @@
+moving_filename: './Images/TRAP_DL_12_561.tiff'
+target_filename: './Images/Allen_ref.tiff'
+output_path: './result/'
+contrast_min: 14
+contrast_max: 2000
+z_cut: 'auto'
+y_cut: 'auto'
+x_cut: 'auto'
+voxel_size_moving: [0.01, 0.01, 0.01]
+voxel_size_target: [0.025, 0.025, 0.025]
+flip: true
+match_shapes: false
